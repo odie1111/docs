@@ -119,11 +119,17 @@ HTTP 請求在實際碰觸到應用程式之前，最好是可以層層通過許
         //
     }]);
 
-Use an array to assign multiple middleware to the route:
+使用一組陣列為路由指派多個中介層：
 
     Route::get('/', ['middleware' => ['first', 'second'], function () {
         //
     }]);
+
+除了使用陣列之外，你也可以在路由的定義之後鏈結 `middleware` 方法：
+
+    Route::get('/', function () {
+        //
+    }])->middleware(['first', 'second']);
 
 <a name="middleware-parameters"></a>
 ## 中介層參數
@@ -159,7 +165,7 @@ Use an array to assign multiple middleware to the route:
 
     }
 
-在路由中可使用冒號 `：` 來區隔中介層名稱與指派參數，多筆參數可使用逗號作為分隔：
+在路由中可使用冒號 `:` 來區隔中介層名稱與指派參數，多筆參數可使用逗號作為分隔：
 
     Route::put('post/{id}', ['middleware' => 'role:editor', function ($id) {
         //

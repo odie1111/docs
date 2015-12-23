@@ -7,7 +7,7 @@
     - [撰寫驗證邏輯](#quick-writing-the-validation-logic)
     - [顯示驗證錯誤](#quick-displaying-the-validation-errors)
     - [AJAX 請求和驗證](#quick-ajax-requests-and-validation)
-- [其他驗證的處理](#foo)
+- [其他驗證的處理](#other-validation-approaches)
     - [手動建立驗證程式](#manually-creating-validators)
     - [表單要求驗證](#form-request-validation)
 - [處理錯誤訊息](#working-with-error-messages)
@@ -283,7 +283,7 @@ Laravel 提供了各種不同的處理方法來驗證應用程式傳入進來的
 表單的請求類別內包含了 `authorize` 方法。在這個方法中，你可以確認使用者是否真的通過授權，可以更新特定資料。打個比方，當一個使用者試圖更新部落格文章的評論，他確實是這篇評論的擁有者嗎？例如：
 
     /**
-     * Determine if the user is authorized to make this request.
+     * 判斷使用者是否有權限做出此請求。
      *
      * @return bool
      */
@@ -304,7 +304,7 @@ Laravel 提供了各種不同的處理方法來驗證應用程式傳入進來的
 如果你打算在應用程式的其他部分處理授權邏輯，只要從 `authorize` 方法回傳 `true` ：
 
     /**
-     * Determine if the user is authorized to make this request.
+     * 判斷使用者是否有權限做出此請求。
      *
      * @return bool
      */
@@ -323,6 +323,23 @@ Laravel 提供了各種不同的處理方法來驗證應用程式傳入進來的
     protected function formatErrors(Validator $validator)
     {
         return $validator->errors()->all();
+    }
+
+#### 自定錯誤訊息
+
+你可以透過覆寫表單請求的 `messages` 方法自定錯誤訊息。此方法必須回傳一個陣列，含有成對的屬性與規則及對應的錯誤訊息：
+
+    /**
+     * 取得已定義驗證規則的錯誤訊息。
+     *
+     * @return array
+     */
+    public function messages()
+    {
+        return [
+            'title.required' => '標題是必填的',
+            'body.required'  => '訊息是必填的',
+        ];
     }
 
 <a name="working-with-error-messages"></a>
@@ -415,7 +432,7 @@ Laravel 提供了各種不同的處理方法來驗證應用程式傳入進來的
 以下是所有可用的驗證規則清單與功能：
 
 <style>
-    .collection-method-list {
+    .collection-method-list > p {
         column-count: 3; -moz-column-count: 3; -webkit-column-count: 3;
         column-gap: 2em; -moz-column-gap: 2em; -webkit-column-gap: 2em;
     }
@@ -426,47 +443,48 @@ Laravel 提供了各種不同的處理方法來驗證應用程式傳入進來的
 </style>
 
 <div class="collection-method-list" markdown="1">
-- [Accepted](#rule-accepted)
-- [Active URL](#rule-active-url)
-- [After (Date)](#rule-after)
-- [Alpha](#rule-alpha)
-- [Alpha Dash](#rule-alpha-dash)
-- [Alpha Numeric](#rule-alpha-num)
-- [Array](#rule-array)
-- [Before (Date)](#rule-before)
-- [Between](#rule-between)
-- [Boolean](#rule-boolean)
-- [Confirmed](#rule-confirmed)
-- [Date](#rule-date)
-- [Date Format](#rule-date-format)
-- [Different](#rule-different)
-- [Digits](#rule-digits)
-- [Digits Between](#rule-digits-between)
-- [E-Mail](#rule-email)
-- [Exists (Database)](#rule-exists)
-- [Image (File)](#rule-image)
-- [In](#rule-in)
-- [Integer](#rule-integer)
-- [IP Address](#rule-ip)
-- [JSON](#rule-json)
-- [Max](#rule-max)
-- [MIME Types (File)](#rule-mimes)
-- [Min](#rule-min)
-- [Not In](#rule-not-in)
-- [Numeric](#rule-numeric)
-- [Regular Expression](#rule-regex)
-- [Required](#rule-required)
-- [Required If](#rule-required-if)
-- [Required With](#rule-required-with)
-- [Required With All](#rule-required-with-all)
-- [Required Without](#rule-required-without)
-- [Required Without All](#rule-required-without-all)
-- [Same](#rule-same)
-- [Size](#rule-size)
-- [String](#rule-string)
-- [Timezone](#rule-timezone)
-- [Unique (Database)](#rule-unique)
-- [URL](#rule-url)
+[Accepted](#rule-accepted)
+[Active URL](#rule-active-url)
+[After (Date)](#rule-after)
+[Alpha](#rule-alpha)
+[Alpha Dash](#rule-alpha-dash)
+[Alpha Numeric](#rule-alpha-num)
+[Array](#rule-array)
+[Before (Date)](#rule-before)
+[Between](#rule-between)
+[Boolean](#rule-boolean)
+[Confirmed](#rule-confirmed)
+[Date](#rule-date)
+[Date Format](#rule-date-format)
+[Different](#rule-different)
+[Digits](#rule-digits)
+[Digits Between](#rule-digits-between)
+[E-Mail](#rule-email)
+[Exists (Database)](#rule-exists)
+[Image (File)](#rule-image)
+[In](#rule-in)
+[Integer](#rule-integer)
+[IP Address](#rule-ip)
+[JSON](#rule-json)
+[Max](#rule-max)
+[MIME Types (File)](#rule-mimes)
+[Min](#rule-min)
+[Not In](#rule-not-in)
+[Numeric](#rule-numeric)
+[Regular Expression](#rule-regex)
+[Required](#rule-required)
+[Required If](#rule-required-if)
+[Required Unless](#rule-required-unless)
+[Required With](#rule-required-with)
+[Required With All](#rule-required-with-all)
+[Required Without](#rule-required-without)
+[Required Without All](#rule-required-without-all)
+[Same](#rule-same)
+[Size](#rule-size)
+[String](#rule-string)
+[Timezone](#rule-timezone)
+[Unique (Database)](#rule-unique)
+[URL](#rule-url)
 </div>
 
 <a name="rule-accepted"></a>
@@ -577,9 +595,11 @@ Instead of passing a date string to be evaluated by `strtotime`, you may specify
 
     'email' => 'exists:staff,email,account_id,1'
 
-如果傳入 "where" 語句的查詢值是 `NULL` ，會確認查詢條件的值是否為 `NULL`：
+你也可以傳遞 `NULL` 或 `NOT_NULL` 至「Where」語句：
 
     'email' => 'exists:staff,email,deleted_at,NULL'
+
+    'email' => 'exists:staff,email,deleted_at,NOT_NULL'
 
 <a name="rule-image"></a>
 #### image
@@ -620,6 +640,10 @@ The field under validation must a valid JSON string.
 
     'photo' => 'mimes:jpeg,bmp,png'
 
+即便你只需要指定的副檔名，但此規則實際上驗證了檔案的 MIME 類型，透過讀取檔案的內容，並猜測它的 MIME 類型。
+
+完整的 MIME 類型及對應的副檔名清單可以在下方連結找到：[http://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types](http://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types)
+
 <a name="rule-min"></a>
 #### min:_value_
 
@@ -640,47 +664,57 @@ The field under validation must a valid JSON string.
 
 驗證欄位值符合給定的正規表示式。
 
-**注意：** 當使用 `regex`  pattern 時，你必須使用陣列，而不該用管線分隔規則，especially if the regular expression contains a pipe character.
+**注意：**當使用 `regex` 規則時，你必須使用陣列，而不該用管線分隔規則，特別是當正規表示式含有管線符號時。
 
 <a name="rule-required"></a>
 #### required
 
-驗證輸入資料裏有此欄位。
+驗證欄位必須存在輸入資料且不為空。欄位符合下方任一條件時「空」為真：
+
+- 該值為 `null`。
+- 該值為空字串。
+- 該值為空陣列或空的`可數`物件。
+- 該值為沒有路徑的上傳檔案。
 
 <a name="rule-required-if"></a>
-#### required_if:_field_,_value_,...
+#### required_if:_anotherfield_,_value_,...
 
-如果指定 _欄位（ field ）_ 的等於任何一個 _value_，則此欄位為必填。
+如果指定的_其它欄位（ anotherfield ）_等於任何一個 _value_ 時，此欄位為必填。
+
+<a name="rule-required-unless"></a>
+#### required_unless:_anotherfield_,_value_,...
+
+如果指定的_其它欄位（ anotherfield ）_等於任何一個 _value_ 時，則此欄位不為必填。
 
 <a name="rule-required-with"></a>
 #### required_with:_foo_,_bar_,...
 
-如果指定的欄位之中，_任一_ 個有值，則此欄位為必填。
+如果指定的欄位之中，_任一_個有值，則此欄位為必填。
 
 <a name="rule-required-with-all"></a>
 #### required_with_all:_foo_,_bar_,...
 
-如果指定的 _所有_ 欄位都有值，則此欄位為必填。
+如果指定的_所有_欄位都有值，則此欄位為必填。
 
 <a name="rule-required-without"></a>
 #### required_without:_foo_,_bar_,...
 
-如果缺少 _任何一個_ 指定的欄位，則此欄位為必填。
+如果缺少_任何一個_指定的欄位，則此欄位為必填。
 
 <a name="rule-required-without-all"></a>
 #### required_without_all:_foo_,_bar_,...
 
-如果 _所有_ 指定的欄位都沒有值，則此欄位為必填。
+如果_所有_指定的欄位都沒有值，則此欄位為必填。
 
 <a name="rule-same"></a>
 #### same:_field_
 
-驗證欄位值和指定的 _欄位（ field ）_ 值相同。
+驗證欄位值和指定的_欄位（ field ）_值相同。
 
 <a name="rule-size"></a>
 #### size:_value_
 
-驗證欄位值的大小需符合給定 _value_ 值。對於字串來說， _value_ 為字元數。對於數字來說， _value_ 為某個整數值。對檔案來說， _size_ 對應到的是檔案大小（單位 kb ）。
+驗證欄位值的大小需符合給定 _value_ 值。對於字串來說，_value_ 為字元數。對於數字來說，_value_ 為某個整數值。對檔案來說，_size_ 對應到的是檔案大小（單位 kb ）。
 
 <a name="rule-string"></a>
 #### string
@@ -713,9 +747,13 @@ The field under validation must a valid JSON string.
 
     'email' => 'unique:users,email_address,'.$user->id
 
-**增加額外的 Where 查詢：**
+如果你的資料表使用的主建名稱不是 `id`，那麼你可以在第四個參數指定它：
 
-也可以指定更多的條件到 "where" 查詢語句：
+    'email' => 'unique:users,email_address,'.$user->id.',user_id'
+
+**增加額外的 Where 語句：**
+
+也可以指定更多的條件到「where」查詢語句：
 
     'email' => 'unique:users,email_address,NULL,id,account_id,1'
 
@@ -729,7 +767,7 @@ The field under validation must a valid JSON string.
 <a name="conditionally-adding-rules"></a>
 ## 依條件增加規則
 
-在某些情況下，你可能 **只想** 在輸入資料中有此欄位時，才進行驗證。只要增加 `sometimes` 規則到進規則列表，就可以快速達成：
+在某些情況下，你可能**只想**在輸入資料中有此欄位時，才進行驗證。只要增加 `sometimes` 規則到進規則列表，就可以快速達成：
 
     $v = Validator::make($data, [
         'email' => 'sometimes|required|email',
@@ -752,18 +790,18 @@ The field under validation must a valid JSON string.
         return $input->games >= 100;
     });
 
-傳入 `sometimes` 方法的第一個參數，是我們要依條件認證的欄位名稱。第二個參數是我們想加入驗證規則。`閉包 (Closure)` 作為第三個參數傳入，如果其回傳 `true` 額外的規則就會被加入。這個方法可以輕鬆的建立複雜的條件式驗證。你甚至可以一次對多個欄位增加條件式驗證：
+傳入 `sometimes` 方法的第一個參數，是我們要依條件認證的欄位名稱。第二個參數是我們想加入驗證規則。`閉包`作為第三個參數傳入，如果其回傳 `true` 額外的規則就會被加入。這個方法可以輕鬆的建立複雜的條件式驗證。你甚至可以一次對多個欄位增加條件式驗證：
 
     $v->sometimes(['reason', 'cost'], 'required', function($input) {
         return $input->games >= 100;
     });
 
-> **注意：** 傳入 `Closure` 的 `$input` 參數是 `Illuminate\Support\Fluent` 實例，可以用來作為取得你的輸入和檔案的物件。
+> **注意：**傳入`閉包`的 `$input` 參數是 `Illuminate\Support\Fluent` 實例，可以用來作為取得你的輸入和檔案的物件。
 
 <a name="custom-validation-rules"></a>
 ## 自訂驗證規則
 
-Laravel 提供了很多有用的驗證規則；但是，你可能希望自訂一些規則。註冊自訂的驗證規則的方法之一，就是使用 `Validator::extend` 方法 [facade](/docs/{{version}}/facades) 讓我們使用這個方法在 [服務提供者](/docs/{{version}}/providers) 來自訂註冊的驗證規則：
+Laravel 提供了很多有用的驗證規則；但是，你可能希望自訂一些規則。註冊自訂的驗證規則的方法之一，就是使用 `Validator::extend` 方法 [facade](/docs/{{version}}/facades) 讓我們使用這個方法在[服務提供者](/docs/{{version}}/providers)來自訂註冊的驗證規則：
 
     <?php
 
@@ -781,7 +819,7 @@ Laravel 提供了很多有用的驗證規則；但是，你可能希望自訂一
          */
         public function boot()
         {
-            Validator::extend('foo', function($attribute, $value, $parameters) {
+            Validator::extend('foo', function($attribute, $value, $parameters, $validator) {
                 return $value == 'foo';
             });
         }
@@ -797,7 +835,7 @@ Laravel 提供了很多有用的驗證規則；但是，你可能希望自訂一
         }
     }
 
-自訂的驗證閉包接收三個參數：要被驗證的屬性名稱 `$attribute`，屬性的值 `$value`，傳入驗證規則的參數陣列 `$parameters`。
+自訂的驗證閉包接收四個參數：要被驗證的屬性名稱 `$attribute`，屬性的值 `$value`，傳入驗證規則的參數陣列 `$parameters`，及 `Validator` 實例。
 
 除了使用閉包，你也可以傳入類別和方法到 `extend` 方法中：
 
@@ -813,7 +851,7 @@ Laravel 提供了很多有用的驗證規則；但是，你可能希望自訂一
 
     // The rest of the validation error messages...
 
-當你在建立自訂的驗證規則時，你可能需要定義保留欄位來取代錯誤訊息。你可以建立自訂的 Validator ，像上面所描述的透過 `Validator` facade 來使用 `replacer` 的方法。你可以透過 [服務提供者](/docs/{{version}}/providers) 中的 `boot` 方法這麼做：
+當你在建立自訂的驗證規則時，你可能需要定義保留欄位來取代錯誤訊息。你可以建立自訂的驗證器，像上面所描述的透過 `Validator` facade 來使用 `replacer` 的方法。你可以透過[服務提供者](/docs/{{version}}/providers)中的 `boot` 方法這麼做：
 
     /**
      * Bootstrap any application services.
@@ -828,3 +866,21 @@ Laravel 提供了很多有用的驗證規則；但是，你可能希望自訂一
             return str_replace(...);
         });
     }
+
+#### 隱式擴充功能
+
+預設情況中，當驗證一個屬性時，如同定義的 [`required`](#rule-required) 規則，若不存在或包含空值，則一般的驗證規則，包含自定擴充功能，都不會被執行。例如，[`integer`](#rule-integer) 規則當值為 `null` 將不被執行：
+
+    $rules = ['count' => 'integer'];
+
+    $input = ['count' => null];
+
+    Validator::make($input, $rules)->passes(); // true
+
+若要當屬性為空時依然執行該規則，那麼該規則必須暗示屬性為必填。要建立一個「隱式」擴充功能，可以使用 `Validator::extendImplicit()` 方法：
+
+    Validator::extendImplicit('foo', function($attribute, $value, $parameters, $validator) {
+        return $value == 'foo';
+    });
+
+> **注意：**一個「隱式」擴充功能只會_暗示_該屬性為必填。不論它實際上是無效或是空的屬性都取決你。

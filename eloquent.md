@@ -4,7 +4,7 @@
 - [定義模型](#defining-models)
     - [Eloquent 模型慣例](#eloquent-model-conventions)
 - [取回多個模型](#retrieving-multiple-models)
-- [取回單一模型／集合](#retrieving-single-models)
+- [取回單一模型或集合](#retrieving-single-models)
     - [取回集合](#retrieving-aggregates)
 - [新增和更新模型](#inserting-and-updating-models)
     - [基本新增](#basic-inserts)
@@ -117,10 +117,30 @@ Eloquent 也會假設每個資料表有一個主鍵欄位叫做 `id`。你可以
         protected $dateFormat = 'U';
     }
 
+#### 資料庫連接
+
+預設情況下，所有的 Eloquent 模型會使用你應用程式中預設的資料庫連接設定。如果你想為模型指定不同的連接，可以使用 `$connection` 屬性：
+
+    <?php
+
+    namespace App;
+
+    use Illuminate\Database\Eloquent\Model;
+
+    class Flight extends Model
+    {
+        /**
+         * 此模型的連接名稱。
+         *
+         * @var string
+         */
+        protected $connection = 'connection-name';
+    }
+
 <a name="retrieving-multiple-models"></a>
 ## 取回多個模型
 
-一旦你建立了一個模型並且將模型[關連到資料表](/docs/{{version}}/schema)，你就可以從資料庫中取得資料。把每個 Eloquent 模型想像成強大的[查詢產生器](/docs/{{version}}/queries)，讓你可以流暢地查詢與模型關聯的資料表。例如：
+一旦你建立了一個模型並且將模型[關連到資料表](/docs/{{version}}/schema)，你就可以從資料庫中取得資料。把每個 Eloquent 模型想像成強大的[查詢建構器](/docs/{{version}}/queries)，讓你可以流暢地查詢與模型關聯的資料表。例如：
 
     <?php
 
@@ -154,14 +174,14 @@ Eloquent 也會假設每個資料表有一個主鍵欄位叫做 `id`。你可以
 
 #### 增加額外的限制
 
-Eloquent 的 `all` 方法會回傳在模型資料表中所有的結果。由於每個 Eloquent 模型可以當作一個[查詢產生器](/docs/{{version}}/queries)，所以你可以在查詢中增加規則，然後透過 `get` 方法來取得結果：
+Eloquent 的 `all` 方法會回傳在模型資料表中所有的結果。由於每個 Eloquent 模型可以當作一個[查詢建構器](/docs/{{version}}/queries)，所以你可以在查詢中增加規則，然後透過 `get` 方法來取得結果：
 
     $flights = App\Flight::where('active', 1)
                    ->orderBy('name', 'desc')
                    ->take(10)
                    ->get();
 
-> **注意：**由於 Eloquent 模型是查詢產生器，應該檢閱所有[查詢產生器](/docs/{{version}}/queries)可用的方法。你可以在你的 Eloquent 查詢中使用這其中的任何方法。
+> **注意：**由於 Eloquent 模型是查詢建構器，應該檢閱所有[查詢建構器](/docs/{{version}}/queries)可用的方法。你可以在你的 Eloquent 查詢中使用這其中的任何方法。
 
 #### 集合
 
@@ -211,7 +231,7 @@ Eloquent 的 `all` 方法會回傳在模型資料表中所有的結果。由於�
 <a name="retrieving-aggregates"></a>
 ### 取回集合
 
-當然，你也可以使用 `count`、`sum`、`max`，和其他[查詢產生器](/docs/{{version}}/queries)提供的[聚合函式](/docs/{{version}}/queries#aggregates)。這些方法會回傳適當的純量值，而不是一個完整的模型實例：
+當然，你也可以使用 `count`、`sum`、`max`，和其他[查詢建構器](/docs/{{version}}/queries)提供的[聚合函式](/docs/{{version}}/queries#aggregates)。這些方法會回傳適當的純量值，而不是一個完整的模型實例：
 
     $count = App\Flight::where('active', 1)->count();
 
@@ -413,6 +433,24 @@ Eloquent 的 `all` 方法會回傳在模型資料表中所有的結果。由於�
 
     $flight->history()->withTrashed()->get();
 
+#### Where 子句注意事項
+
+當在你的軟刪除模型的查詢增加 `orWhere` 子句時，總是使用[進階 where 子句](http://laravel.com/docs/5.1/queries#advanced-where-clauses)將 `WHERE` 子句的邏輯分組。例如：
+
+    User::where(function($query) {
+            $query->where('name', '=', 'John')
+                  ->orWhere('votes', '>', 100);
+            })
+            ->get();
+
+這會產生以下的 SQL：
+
+    select * from `users` where `users`.`deleted_at` is null and (`name` = 'John' or `votes` > 100)
+
+如果 `orWhere` 子句沒有被分組，它會在包含軟刪除的紀錄產生以下的 SQL：
+
+    select * from `users` where `users`.`deleted_at` is null and `name` = 'John' or `votes` > 100
+
 #### 只取得被軟刪除的模型
 
 `onlyTrashed` 方法會**只**取得被軟刪除的模型：
@@ -451,6 +489,8 @@ Eloquent 的 `all` 方法會回傳在模型資料表中所有的結果。由於�
 ## 查詢範圍
 
 範圍（Scopes）讓你定義限制的共用集合，它可以輕鬆地在你的應用程式重複使用。例如，你可能需要頻繁地取得所有被認為是「受歡迎的」使用者。要定義範圍，必須簡單地在 Eloquent 模型方法前面加上前綴 `scope`：
+
+範圍應總是回傳查詢建構器的實例：
 
     <?php
 

@@ -33,7 +33,7 @@ Laravel 使用 [Composer](http://getcomposer.org) 來管理相依性。所以，
 
 首先，使用 Composer 下載 Laravel 安裝包：
 
-    composer global require "laravel/installer=~1.1"
+    composer global require "laravel/installer"
 
 請確定把 `~/.composer/vendor/bin` 路徑放置於你的 PATH 裡，這樣你的系統才能找到 `laravel` 執行檔。
 
@@ -43,9 +43,9 @@ Laravel 使用 [Composer](http://getcomposer.org) 來管理相依性。所以，
 
 #### 透過 Composer Create-Project
 
-你也可以透過 Composer 在命令列執行 `create-project` 指令來安裝 Laravel：
+除此之外，你也可以透過 Composer 在指令列執行 `create-project` 指令來安裝 Laravel：
 
-    composer create-project laravel/laravel --prefer-dist
+    composer create-project laravel/laravel --prefer-dist blog
 
 <a name="configuration"></a>
 ## 設定

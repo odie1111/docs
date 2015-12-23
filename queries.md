@@ -1,32 +1,32 @@
-# 資料庫：查詢產生器
+# 資料庫：查詢建構器
 
 - [簡介](#introduction)
 - [取得結果](#retrieving-results)
     - [聚合](#aggregates)
-- [Selects（選出）](#selects)
-- [Joins（連接）](#joins)
-- [Unions（聯合）](#unions)
+- [Selects](#selects)
+- [Joins](#joins)
+- [Unions](#unions)
 - [Where 子句](#where-clauses)
     - [進階 Where 子句](#advanced-where-clauses)
-- [Ordering（排序）、Grouping（分組）、Limit（限制）及 Offset（偏移）](#ordering-grouping-limit-and-offset)
-- [Inserts（插入）](#inserts)
-- [Updates（更新）](#updates)
-- [Deletes（刪除）](#deletes)
+- [Ordering、Grouping、Limit 及 Offset](#ordering-grouping-limit-and-offset)
+- [Inserts](#inserts)
+- [Updates](#updates)
+- [Deletes](#deletes)
 - [悲觀鎖定](#pessimistic-locking)
 
 <a name="introduction"></a>
 ## 簡介
 
-資料庫查詢產生器提供方便、流暢的介面，用來建立及執行資料庫查詢。它可用來執行你的應用程式中大部分的資料庫操作，且在所有支援的資料庫系統中都能作用。
+資料庫查詢建構器提供方便、流暢的介面，用來建立及執行資料庫查詢。它可用來執行你的應用程式中大部分的資料庫操作，且在所有支援的資料庫系統中都能作用。
 
-> **注意：** Laravel 的查詢產生器使用 PDO 參數綁定，以保護你的應用程式不受資料隱碼（SQL injection）攻擊。傳入字串作為綁定前不需先清理它們。
+> **注意：**Laravel 的查詢建構器使用 PDO 參數綁定，以保護你的應用程式不受資料庫隱碼攻擊。傳入字串作為綁定前不需先清理它們。
 
 <a name="retrieving-results"></a>
 ## 取得結果
 
 #### 從資料表中取得所有的資料列
 
-要開始進行流暢查詢，在 `DB` facade 上使用 `table` 方法。`table` 方法會針對給定的資料表傳回一個流暢查詢產生器實例，允許你在查詢上鏈結更多的約束，並於最後得到結果。在這個例子，讓我們從一個資料表中`取得`所有的記錄：
+要開始進行流暢查詢，在 `DB` facade 上使用 `table` 方法。`table` 方法會針對給定的資料表傳回一個流暢查詢建構器實例，允許你在查詢上鏈結更多的約束，並於最後得到結果。在這個例子，讓我們從一個資料表中`取得`所有的記錄：
 
     <?php
 
@@ -56,7 +56,7 @@
         echo $user->name;
     }
 
-#### 從資料表中取得單一列／欄
+#### 從資料表中取得單一列或欄
 
 若你只需從資料表中取出單一列，你可以使用 `first` 方法。這個方法會回傳單一的 `StdClass` 物件：
 
@@ -68,7 +68,7 @@
 
     $email = DB::table('users')->where('name', 'John')->value('email');
 
-#### 從資料表中將結果切塊（chunking）
+#### 從資料表中將結果切塊
 
 若你需要操作數千筆資料庫記錄，可考慮使用 `chunk` 方法。這個方法一次取出一小「塊」結果，並將每個區塊餵給一個`閉包`處理。這個方法對編寫要處理數千筆記錄的 [Artisan 指令](/docs/{{version}}/artisan)非常有用。例如，讓我們將整個 `user` 資料表切塊，一次處理 100 筆記錄：
 
@@ -107,7 +107,7 @@
 <a name="aggregates"></a>
 ### 聚合
 
-查詢產生器也提供了各種聚合方法，例如 `count`、`max`、`min`、`avg`、以及 `sum`。你可以在建立你的查詢後呼叫其中任何一個方法：
+查詢建構器也提供了各種聚合方法，例如 `count`、`max`、`min`、`avg`、以及 `sum`。你可以在建立你的查詢後呼叫其中任何一個方法：
 
     $users = DB::table('users')->count();
 
@@ -132,7 +132,7 @@
 
     $users = DB::table('users')->distinct()->get();
 
-若你已有一個查詢產生器的實例，而你希望在其既存的 select 子句中加入一個欄位，你可使用 `addSelect` 方法：
+若你已有一個查詢建構器的實例，而你希望在其既存的 select 子句中加入一個欄位，你可使用 `addSelect` 方法：
 
     $query = DB::table('users')->select('name');
 
@@ -151,9 +151,9 @@
 <a name="joins"></a>
 ## Joins（連接）
 
-#### Inner Join（內部連接）述句
+#### Inner Join 語法
 
-查詢產生器也可用來編寫 join 述句。要操作基本的 SQL「inner join」，你可以在查詢產生器實例上使用 `join` 方法。傳入 `join` 方法的第一個參數是你需要連接的資料表名稱，其他參數則指定用以連接的欄位約束。當然，如你所見，你可以在單一查詢連接多個資料表：
+查詢建構器也可用來編寫 join 語法。要操作基本的 SQL「inner join」，你可以在查詢建構器實例上使用 `join` 方法。傳入 `join` 方法的第一個參數是你需要連接的資料表名稱，其他參數則指定用以連接的欄位約束。當然，如你所見，你可以在單一查詢連接多個資料表：
 
     $users = DB::table('users')
                 ->join('contacts', 'users.id', '=', 'contacts.user_id')
@@ -161,7 +161,7 @@
                 ->select('users.*', 'contacts.phone', 'orders.price')
                 ->get();
 
-#### Left Join（左連接）述句
+#### Left Join 語法
 
 如果你想以操作「left join」來代替「inner join」，使用 `leftJoin` 方法。`leftJoin` 方法和 `join` 方法有相同的署名：
 
@@ -169,7 +169,7 @@
                 ->leftJoin('posts', 'users.id', '=', 'posts.user_id')
                 ->get();
 
-#### 進階 Join 述句
+#### 進階 Join 語法
 
 你也可以指定更進階的 join 子句。以傳入一個`閉包`當作 `join` 方法的第二參數作為開始。此`閉包`會接收 `JoinClause` 物件，讓你可以在 `join` 子句上指定約束：
 
@@ -206,7 +206,7 @@
 <a name="where-clauses"></a>
 ## Where 子句
 
-#### 簡易方法子句 Simple Where Clauses
+#### 簡易 Where 子句
 
 要在查詢中加入 `where` 子句，在查詢建造者實例中使用 `where` 方法。最基本的 `where` 呼叫需要三個參數。第一個參數是欄位的名稱。第二個參數是一個運算子，它可以是資料庫所支援的任何運算子。第三個參數是要對欄位評估的值。
 
@@ -232,7 +232,7 @@
                     ->where('name', 'like', 'T%')
                     ->get();
 
-#### Or（或）述句
+#### Or 語法
 
 你也可以在查詢中加入 `or` 子句，將 where 約束鏈結在一起。`orWhere` 方法和 `where` 方法接受相同的參數：
 
@@ -258,7 +258,7 @@
                         ->whereNotBetween('votes', [1, 100])
                         ->get();
 
-**whereIn／whereNotIn**
+**whereIn 與 whereNotIn**
 
 `whereIn` 方法驗證給定欄位的值包含在給定的陣列之內：
 
@@ -272,7 +272,7 @@
                         ->whereNotIn('id', [1, 2, 3])
                         ->get();
 
-**whereNull／whereNotNull**
+**whereNull 與 whereNotNull**
 
 `whereNull` 方法驗證給定㯗位的值為 `NULL`：
 
@@ -305,7 +305,7 @@
 
     select * from users where name = 'John' or (votes > 100 and title <> 'Admin')
 
-#### Exists（存在）述句
+#### Exists 語法
 
 `whereExists` 方法允許你編寫 `where exists` SQL 子句。`whereExists` 方法接受一個`閉包`參數，它會接收查詢產生器實例，讓你可以定義應放在「exists」SQL 子句中的查詢：
 
@@ -325,7 +325,7 @@
     )
 
 <a name="ordering-grouping-limit-and-offset"></a>
-## Ordering（排序）、Grouping（分組）、Limit（限制）及 Offset（偏移）
+## Ordering、Grouping、Limit 及 Offset
 
 #### orderBy
 
@@ -335,7 +335,7 @@
                     ->orderBy('name', 'desc')
                     ->get();
 
-#### groupBy／having／havingRaw
+#### groupBy、having 與 havingRaw
 
 `groupBy` 和 `having` 方法可以用來將查詢結果分組。`having` 方法的署名和 `where` 方法的類似：
 
@@ -352,7 +352,7 @@
                     ->havingRaw('SUM(price) > 2500')
                     ->get();
 
-#### skip／take
+#### skip 與 take
 
 要限制查詢所回傳的結果數量，或略過給定數量的查詢結果（`偏移`），你可使用 `skip` 和 `take` 方法：
 
@@ -393,9 +393,9 @@
                 ->where('id', 1)
                 ->update(['votes' => 1]);
 
-#### 遞增／遞減
+#### 遞增或遞減
 
-查詢產生器也提供便利的方法來遞增或遞減給定欄位的值。這只是個捷徑，提供了一個較手動編寫 `update` 述句更具表達力且精練的介面。
+查詢產生器也提供便利的方法來遞增或遞減給定欄位的值。這只是個捷徑，提供了一個較手動編寫 `update` 語法更具表達力且精練的介面。
 
 這兩個方法都接受至少一個參數：要修改的欄位。可選擇性地傳入第二個參數，用來控制欄位應遞增／遞減的量。
 
@@ -418,7 +418,7 @@
 
     DB::table('users')->delete();
 
-在呼叫 `delete` 方法之前，你可加上 `where` 子句用來約束 `delete` 述句：
+在呼叫 `delete` 方法之前，你可加上 `where` 子句用來約束 `delete` 語法：
 
     DB::table('users')->where('votes', '<', 100)->delete();
 
@@ -429,7 +429,7 @@
 <a name="pessimistic-locking"></a>
 ## 悲觀鎖定
 
-產詢產生器也包含一些函式，用以協助你在 `select` 述句上作「悲觀鎖定」。要以「共享鎖」來執行述句，你可以在查詢上使用 `sharedLock` 方法。共享鎖可避免選擇的資料列被更改，直到你的交易提交為止：
+產詢產生器也包含一些函式，用以協助你在 `select` 語法上作「悲觀鎖定」。要以「共享鎖」來執行述句，你可以在查詢上使用 `sharedLock` 方法。共享鎖可避免選擇的資料列被更改，直到你的交易提交為止：
 
     DB::table('users')->where('votes', '>', 100)->sharedLock()->get();
 

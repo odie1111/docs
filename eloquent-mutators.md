@@ -97,14 +97,14 @@
          *
          * @var array
          */
-        protected $dates = ['created_at', 'updated_at', 'disabled_at'];
+        protected $dates = ['created_at', 'updated_at', 'deleted_at'];
     }
 
 當某個欄位被認為是日期，你可以將數值設定成一個 UNIX 時間戳記、日期字串（`Y-m-d`）、日期時間（ date-time ）字串、當然還有 `DateTime` 或 `Carbon` 實例，然後日期數值會自動正確的儲存到你的資料庫中：
 
     $user = App\User::find(1);
 
-    $user->disabled_at = Carbon::now();
+    $user->deleted_at = Carbon::now();
 
     $user->save();
 
@@ -112,7 +112,7 @@
 
     $user = App\User::find(1);
 
-    return $user->disabled_at->getTimestamp();
+    return $user->deleted_at->getTimestamp();
 
 預設來說，時間戳記將會以 `'Y-m-d H:i:s'` 格式化。如果你想要自訂你自己的時間戳記格式，在你的模型中設定 `$dateFormat` 屬性。這個屬性定義了時間屬性該如何被儲存到資料庫，以及模型被序列化成一個陣列或 JSON 時的格式：
 
@@ -135,7 +135,7 @@
 <a name="attribute-casting"></a>
 ## 屬性型別轉換
 
-`$casts` 屬性在你的模型中提供了方便的方法將屬性轉換為常見的資料類型。`$casts` 屬性應該是一個陣列，而鍵是那些需要被轉換的屬性名稱，而值則是代表你想要把欄位轉換成什麼類型。支援的型別轉換的類型有：`integer`、`real`、`float`、`double`、`string`、`boolean`、`object` 和 `array`。
+`$casts` 屬性在你的模型中提供了方便的方法將屬性轉換為常見的資料類型。`$casts` 屬性應該是一個陣列，而鍵是那些需要被轉換的屬性名稱，而值則是代表你想要把欄位轉換成什麼類型。支援的型別轉換的類型有：`integer`、`real`、`float`、`double`、`string`、`boolean`、`object`、`array`、`collection`、`date` 及 `datetime`。
 
 例如，`is_admin` 屬性以整數（0 或 1）被儲存在我們的資料庫中，讓我們把它轉換為布林值：
 

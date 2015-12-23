@@ -14,6 +14,9 @@
     - [回應](/docs/{{version}}/responses)
     - [視圖](/docs/{{version}}/views)
     - [Blade 模板](/docs/{{version}}/blade)
+- 教學
+    - [初級任務清單](/docs/{{version}}/quickstart)
+    - [中級任務清單](/docs/{{version}}/quickstart-intermediate)
 - 系統架構
     - [請求的生命週期](/docs/{{version}}/lifecycle)
     - [應用程式結構](/docs/{{version}}/structure)
@@ -24,7 +27,7 @@
 - 系統服務
     - [認證](/docs/{{version}}/authentication)
     - [授權](/docs/{{version}}/authorization)
-    - [Artisan 命令列](/docs/{{version}}/artisan)
+    - [Artisan 指令列](/docs/{{version}}/artisan)
     - [交易](/docs/{{version}}/billing)
     - [快取](/docs/{{version}}/cache)
     - [集合](/docs/{{version}}/collections)
@@ -48,7 +51,7 @@
     - [驗證](/docs/{{version}}/validation)
 - 資料庫
     - [入門](/docs/{{version}}/database)
-    - [查詢生成器](/docs/{{version}}/queries)
+    - [查詢建構器](/docs/{{version}}/queries)
     - [遷移](/docs/{{version}}/migrations)
     - [資料填充](/docs/{{version}}/seeding)
 - Eloquent ORM

@@ -48,12 +48,15 @@
 
 <div id="collection-method-list" markdown="1">
 [all](#method-all)
+[avg](#method-avg)
 [chunk](#method-chunk)
 [collapse](#method-collapse)
 [contains](#method-contains)
 [count](#method-count)
 [diff](#method-diff)
 [each](#method-each)
+[every](#method-every)
+[except](#method-except)
 [filter](#method-filter)
 [first](#method-first)
 [flatten](#method-flatten)
@@ -70,7 +73,10 @@
 [keys](#method-keys)
 [last](#method-last)
 [map](#method-map)
+[max](#method-max)
 [merge](#method-merge)
+[min](#method-min)
+[only](#method-only)
 [pluck](#method-pluck)
 [pop](#method-pop)
 [prepend](#method-prepend)
@@ -122,6 +128,26 @@
     collect([1, 2, 3])->all();
 
     // [1, 2, 3]
+
+<a name="method-avg"></a>
+#### `avg()` {#collection-method}
+
+`avg` 方法回傳集合中所有項目的平均值：
+
+    collect([1, 2, 3, 4, 5])->avg();
+
+    // 3
+
+如果集合包含了巢狀陣列或物件，你可以傳遞鍵來指定使用哪些值計算平均值：
+
+    $collection = collect([
+        ['name' => 'JavaScript: The Good Parts', 'pages' => 176],
+        ['name' => 'JavaScript: The Definitive Guide', 'pages' => 1096],
+    ]);
+
+    $collection->avg('pages');
+
+    // 636
 
 <a name="method-chunk"></a>
 #### `chunk()` {#collection-method}
@@ -239,7 +265,7 @@
 <a name="method-every"></a>
 #### `every()` {#collection-method}
 
-The `every` method creates a new collection consisting of every n-th element:
+`every` 方法會建立一個包含每第 n 個元素的新集合：
 
     $collection = collect(['a', 'b', 'c', 'd', 'e', 'f']);
 
@@ -247,11 +273,26 @@ The `every` method creates a new collection consisting of every n-th element:
 
     // ['a', 'e']
 
-You may optionally pass offset as the second argument:
+你可以選擇性的傳遞偏移值作為第二個參數：
 
     $collection->every(4, 1);
 
     // ['b', 'f']
+
+<a name="method-except"></a>
+#### `except()` {#collection-method}
+
+`except` 方法回傳集合中排除指定鍵的所有項目：
+
+    $collection = collect(['product_id' => 1, 'name' => 'Desk', 'price' => 100, 'discount' => false]);
+
+    $filtered = $collection->except(['price', 'discount']);
+
+    $filtered->all();
+
+    // ['product_id' => 1, 'name' => 'Desk']
+
+與 `except` 相反的方法請查看 [only](#method-only)。
 
 <a name="method-filter"></a>
 #### `filter()` {#collection-method}
@@ -333,9 +374,11 @@ You may optionally pass offset as the second argument:
 
 `forPage` 方法回傳含有可以用來在給定頁碼顯示的項目的新集合：
 
-    $collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9])->forPage(2, 3);
+    $collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
-    $collection->all();
+    $chunk = $collection->forPage(2, 3);
+
+    $chunk->all();
 
     // [4, 5, 6]
 
@@ -561,6 +604,19 @@ You may optionally pass offset as the second argument:
 
 > **注意：**正如集合大多數其他的方法一樣，`map` 回傳一個新集合實例；它並沒有修改被呼叫的集合。假如你想改變原始的集合，得使用 [`transform`](#method-transform) 方法。
 
+<a name="method-max"></a>
+#### `max()` {#collection-method}
+
+`max` 方法會傳給定鍵的最大值：
+
+    $max = collect([['foo' => 10], ['foo' => 20]])->max('foo');
+
+    // 20
+
+    $max = collect([1, 2, 3, 4, 5])->max();
+
+    // 5
+
 <a name="method-merge"></a>
 #### `merge()` {#collection-method}
 
@@ -583,6 +639,34 @@ You may optionally pass offset as the second argument:
     $merged->all();
 
     // ['Desk', 'Chair', 'Bookcase', 'Door']
+
+<a name="method-min"></a>
+#### `min()` {#collection-method}
+
+`max` 方法會傳給定鍵的最小值：
+
+    $min = collect([['foo' => 10], ['foo' => 20]])->min('foo');
+
+    // 10
+
+    $min = collect([1, 2, 3, 4, 5])->min();
+
+    // 1
+
+<a name="method-only"></a>
+#### `only()` {#collection-method}
+
+`only` 方法回傳集合中指定鍵的所有項目：
+
+    $collection = collect(['product_id' => 1, 'name' => 'Desk', 'price' => 100, 'discount' => false]);
+
+    $filtered = $collection->only(['product_id', 'name']);
+
+    $filtered->all();
+
+    // ['product_id' => 1, 'name' => 'Desk']
+
+與 `only` 相反的方法請查看 [except](#method-only)。
 
 <a name="method-pluck"></a>
 #### `pluck()` {#collection-method}
@@ -635,6 +719,16 @@ You may optionally pass offset as the second argument:
     $collection->all();
 
     // [0, 1, 2, 3, 4, 5]
+
+你可以傳遞選擇性的第二個參數來設置前置項目的鍵：
+
+    $collection = collect(['one' => 1, 'two', => 2]);
+
+    $collection->prepend(0, 'zero');
+
+    $collection->all();
+
+    // ['zero' => 0, 'one' => 1, 'two', => 2]
 
 <a name="method-pull"></a>
 #### `pull()` {#collection-method}

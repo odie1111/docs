@@ -10,6 +10,7 @@
     - [透過 SSH 連接](#connecting-via-ssh)
     - [連接資料庫](#connecting-to-databases)
     - [增加更多網站](#adding-additional-sites)
+    - [設定 Cron 排程器](#configuring-cron-schedules)
     - [連接埠](#ports)
     - [Bash 別名](#bash-aliases)
 - [Blackfire 分析器](#blackfire-profiler)
@@ -31,17 +32,21 @@ Homestead 目前是建置且測試於 Vagrant 1.7。
 ### 內建軟體
 
 - Ubuntu 14.04
-- PHP 5.6
+- Git
+- PHP 5.6 / 7.0
+- Xdebug
 - HHVM
 - Nginx
 - MySQL
+- Sqlite3
 - Postgres
-- Node (With PM2, Bower, Grunt, and Gulp)
+- Composer
+- Node（附帶了 PM2、Bower、Grunt 與 Gulp）
 - Redis
-- Memcached
+- Memcached (僅限 PHP 5.x)
 - Beanstalkd
 - [Laravel Envoy](/docs/{{version}}/envoy)
-- [Blackfire Profiler](#blackfire-profiler)
+- [Blackfire 分析器](#blackfire-profiler)
 
 <a name="installation-and-setup"></a>
 ## 安裝與設定
@@ -49,7 +54,7 @@ Homestead 目前是建置且測試於 Vagrant 1.7。
 <a name="first-steps"></a>
 ### 前置動作
 
-在啟動你的 Homestead 環境之前，你必須先安裝 [VirtualBox](https://www.virtualbox.org/wiki/Downloads) 或 [VMWare](http://www.vmware.com) 以及 [Vagrant](http://www.vagrantup.com/downloads.html). 這些軟體在各平台都有提供易用的視覺化安裝程式。
+在啟動你的 Homestead 環境之前，你必須先安裝 [VirtualBox 5.x](https://www.virtualbox.org/wiki/Downloads) 或 [VMWare](http://www.vmware.com) 以及 [Vagrant](http://www.vagrantup.com/downloads.html)。這些軟體在各個常用的平台都有提供易用的視覺化安裝程式。
 
 若要使用 VMware provider，你需要同時購買 VMware Fusion / Workstation 及 [VMware Vagrant plug-in](http://www.vagrantup.com/vmware) 的軟體授權。使用 VMware 可以在共享資料夾上獲得較快的性能。
 
@@ -65,32 +70,51 @@ Homestead 目前是建置且測試於 Vagrant 1.7。
 
 #### 手動克隆 Homestead 資源庫
 
-你可以簡單地透過手動克隆資源庫的方式來安裝 Homestead。建議可將資源庫克隆至你的 "home" 目錄中的 `Homestead` 資料夾，如此一來 Homestead box 將能提供主機服務給你所有的 Laravel 專案：
+你可以簡單地透過手動克隆資源庫的方式來安裝 Homestead。建議可將資源庫克隆至你的「home」目錄中的 `Homestead` 資料夾，如此一來 Homestead box 將能提供主機服務給你所有的 Laravel 專案：
 
     git clone https://github.com/laravel/homestead.git Homestead
 
-一旦你克隆完 Homestead 資源庫，即可在 Homestead 目錄中執行 `bash init.sh` 指令來創建 `Homestead.yaml` 設定檔。 `Homestead.yaml` 這個檔案將會被放置在你的 `~/.homestead` 目錄中：
+如果你想嘗試 PHP 7.0 版本的 Homestead，可以克隆資源庫的 `php-7` 分支：
+
+    git clone -b php-7 https://github.com/laravel/homestead.git Homestead
+
+一旦你克隆完 Homestead 資源庫，即可在 Homestead 目錄中執行 `bash init.sh` 指令來創建 `Homestead.yaml` 設定檔。`Homestead.yaml` 檔案將會被放置在你的 `~/.homestead` 目錄中：
 
     bash init.sh
+
+<a name="upgrading-to-php-7"></a>
+#### 升級至 PHP 7.0
+
+如果你已經使用 PHP 5.x 的 Homestead box，你可以很簡單的升級你的安裝檔至 PHP 7.0。首先，克隆 `laravel/homestead` 資源庫的 `php-7` 分支至新的資料夾：
+
+    git clone -b php-7 https://github.com/laravel/homestead.git Homestead7
+
+如果你的 `~/.homestead` 目錄已經擁有 `Homestead.yaml` 檔案，那麼你就不需要執行 `init.sh` 腳本。不過，如果這是你機器第一次且唯一 Homestead 安裝，你需要在你新的 Homestead 目錄執行 `bash init.sh`。
+
+接著，在你的 `~/.homestead/Homestead.yaml` 檔案最上方增加 `box` 指令（在 `---` 標記後新的一行）：
+
+    box: laravel/homestead-7
+
+最後，你可以在包含你新克隆 `laravel/homestead` 資源庫的資目錄中執行 `vagrant up` 指令。
 
 <a name="configuring-homestead"></a>
 ### 配置 Homestead
 
-#### 設定你的 Provider
+#### 設定你的提供者
 
-在 `Homestead.yaml` 檔案中的 `provider` 參數是用來設定你想要使用哪一個 Vagrant provider： `virtualbox`、`vmware_fusion` 或 `vmware_workstation`。你可以根據你的喜好來決定 provider：
+在 `Homestead.yaml` 檔案中的 `provider` 參數是用來設定你想要使用哪一個 Vagrant 提供者：`virtualbox`、`vmware_fusion` 或 `vmware_workstation`。你可以根據你的喜好來決定提供者：
 
     provider: virtualbox
 
 #### 設定你的 SSH 金鑰
 
-你還需要將你的 public SSH 金鑰的路徑，配置在 `Homestead.yaml` 檔案中。你沒有 SSH 金鑰？在 Mac 和 Linux 下，你可以利用下面的指令來創建一組 SSH 金鑰：
+你還需要將你的公有 SSH 金鑰的路徑配置在 `Homestead.yaml` 檔案中。你沒有 SSH 金鑰？在 Mac 和 Linux 下，你可以利用下面的指令來建立一組 SSH 金鑰：
 
     ssh-keygen -t rsa -C "you@homestead"
 
 在 Windows 下，你需要安裝 [Git](http://git-scm.com/) 並且使用包含在 Git 裡的 `Git Bash` 來執行上述的指令。另外你也可以使用 [PuTTY](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html) 和 [PuTTYgen](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html)。
 
-一旦你創建了一組 SSH 金鑰，記得在你的 `Homestead.yaml` 檔案中的 `authorize` 屬性去設定 public 金鑰的路徑。
+一旦你創建了一組 SSH 金鑰，記得在你的 `Homestead.yaml` 檔案中的 `authorize` 屬性去設定公有金鑰的路徑。
 
 #### 設定共享資料夾
 
@@ -137,7 +161,7 @@ Homestead 目前是建置且測試於 Vagrant 1.7。
 <a name="launching-the-vagrant-box"></a>
 ### 啟動 Vagrant box
 
-當你根據你的喜好編輯完 `Homestead.yaml` 後，在終端機裡進入你的 Homestead 目錄並執行 `vagrant up` 指令。Vagrant 就會將虛擬主機啟動並自動設定你的共享資料夾和 Nginx 網站。
+當你根據你的喜好編輯完 `Homestead.yaml` 後，在終端機裡進入你的 Homestead 目錄並執行 `vagrant up` 指令。Vagrant 就會自將虛擬主機啟動並自動設定你的共享資料夾和 Nginx 網站。
 
 如果要移除虛擬機器，可以使用 `vagrant destroy --force` 指令。
 
@@ -188,16 +212,30 @@ Windows:
 
 一旦 Homestead 環境配置完畢且運行後，你可能會想要為 Laravel 應用程式增加更多的 Nginx 網站。你可以在單一個 Homestead 環境中運行非常多 Laravel 安裝程式。只要在 `Homestead.yaml` 檔中增加另一個網站設定後，接著在終端機中進入到你的 Homestead 目錄並執行 `vagrant provision` 指令，即可增加另一個網站。
 
+<a name="configuring-cron-schedules"></a>
+### 設定 Cron 排程器
+
+Laravel 提供了便利的方式來[排程 Cron 任務](/docs/{{version}}/scheduling)，透過 `schedule:run` Artisan 指令，排程便會在每分鐘被執行。`schedule:run` 指令會檢查定義在你 `App\Console\Kernel` 類別中排程的任務，判斷哪個任務該被執行。
+
+如果你想為 Homestead 網站使用 `schedule:run` 指令，你可以在定義網站時設置 `schedule` 選項為 `true`：
+
+    sites:
+        - map: homestead.app
+          to: /home/vagrant/Code/Laravel/public
+          schedule: true
+
+該網站的 Cron 任務會被定義於虛擬機器的 `/etc/cron.d` 資料夾中。
+
 <a name="ports"></a>
 ### 連接埠
 
 以下的連接埠將會被轉發至 Homestead 環境：
 
-- **SSH:** 2222 &rarr; 轉發至 22
-- **HTTP:** 8000 &rarr; 轉發至 80
-- **HTTPS:** 44300 &rarr; 轉發至 443
-- **MySQL:** 33060 &rarr; 轉發至 3306
-- **Postgres:** 54320 &rarr; 轉發至 5432
+- **SSH：**2222 &rarr; 轉發至 22
+- **HTTP：**8000 &rarr; 轉發至 80
+- **HTTPS：**44300 &rarr; 轉發至 443
+- **MySQL：**33060 &rarr; 轉發至 3306
+- **Postgres：**54320 &rarr; 轉發至 5432
 
 #### 轉發更多連接埠
 
