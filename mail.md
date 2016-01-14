@@ -11,7 +11,7 @@
 <a name="introduction"></a>
 ## 簡介
 
-Laravel 基於熱門的 [SwiftMailer](http://swiftmailer.org) 函式庫提供了一個簡潔的 API。Laravel 為 SMTP、Mailgun、Mandrill、Amazon SES、PHP 的 `mail` 函式及 `sendmail` 提供驅動，讓你可以快速地以所選擇的本地或雲端服務開始寄送郵件。
+Laravel 基於熱門的 [SwiftMailer](http://swiftmailer.org) 函式庫提供了一個簡潔的 API。Laravel 為 SMTP、Mailgun、Mandrill、Amazon SES、PHP 的 `mail` 函式及 `sendmail` 提供驅動，讓你可以快速地以所選擇的本機或雲端服務開始寄送郵件。
 
 ### 驅動前提
 
@@ -219,7 +219,7 @@ Laravel 允許你在[視圖](/docs/{{version}}/views)中存放電子郵件訊息
 
 #### 日誌驅動
 
-一個解決方案是在本地端開發時使用 `log` 郵件驅動。此驅動會將所有的電子郵件訊息寫入日誌檔案作為檢驗之用。若需要更多根據環境來設定應用程式的資訊，可參考[設定文件](/docs/{{version}}/installation#environment-configuration)。
+一個解決方案是在本機端開發時使用 `log` 郵件驅動。此驅動會將所有的電子郵件訊息寫入日誌檔案作為檢驗之用。若需要更多根據環境來設定應用程式的資訊，可參考[設定文件](/docs/{{version}}/installation#environment-configuration)。
 
 #### 通用收件者
 
